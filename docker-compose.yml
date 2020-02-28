@@ -3,7 +3,7 @@ services:
   jellyfin:
     ports:
         - 8096:8096
-    image: jellyfin/jellyfin
+    image: jellyfin/jellyfin:nightly
     user: 1000:1000
     volumes:
       - ./config:/config

@@ -9,6 +9,12 @@
         <div data-role="content">
             <div class="content-primary">
                 <form id="TemplateConfigForm">
+                    <div class="checkboxContainer checkboxContainer-withDescripton">
+                        <label class="emby-checkbox-label">
+                            <input id="isEnabled" name="isEnabled" type="checkbox" is="emby-checkbox" />
+                            <span>Enabled</span>
+                        </label>
+                    </div>
                     <div class="inputContainer">
                         <label class="inputeLabel inputLabelUnfocused" for="OIDCServer">OIDC Server</label>
                         <input id="OIDCServer" name="OIDCServer" type="text" is="emby-input" />
@@ -33,19 +39,26 @@
             };
 
             $('#TemplateConfigPage').on('pageshow', function () {
-                Dashboard.showLoadingMsg();
+                //Dashboard.showLoadingMsg();
+                var page = this;
+
                 ApiClient.getPluginConfiguration(TemplateConfig.pluginUniqueId).then(function (config) {
-                    $('#OIDCServer').val(config.OIDCServer).change();
-                    $('#OIDCClient').val(config.OIDCClient).change();
+                    $('#isEnabled', page).checked(config.isEnabled).checkboxradio("refresh");
+                    $('#OIDCServer', page).val(config.OIDCServer).change();
+                    $('#OIDCClient', page).val(config.OIDCClient).change();
                     Dashboard.hideLoadingMsg();
                 });
             });
 
             $('#TemplateConfigForm').on('submit', function () {
-                Dashboard.showLoadingMsg();
+                //Dashboard.showLoadingMsg();
+
+                var form = this;
+
                 ApiClient.getPluginConfiguration(TemplateConfig.pluginUniqueId).then(function (config) {
-                    config.OIDCServer = $('#OIDCServer').val();
-                    config.OIDCClient = $('#OIDCClient').val();
+                    config.isEnabled = $('#isEnabled', form).prop('checked');
+                    config.OIDCServer = $('#OIDCServer', form).val();
+                    config.OIDCClient = $('#OIDCClient', form).val();
                     ApiClient.updatePluginConfiguration(TemplateConfig.pluginUniqueId, config).then(function (result) {
                         Dashboard.processPluginConfigurationUpdateResult(result);
                     });

@@ -3,6 +3,8 @@ using System.Threading.Tasks;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Entities;
 using Microsoft.Extensions.Logging;
+using IdentityModel.OidcClient;
+
 
 using Jellyfin.Plugin.OIDCAuth.Configuration;
 
@@ -16,16 +18,28 @@ namespace Jellyfin.Plugin.OIDCAuth
         {
             _logger = Plugin.Logger;
             _config = Plugin.Instance.Configuration;
-
-            _logger.LogWarning(_config.OIDCServer);
         }
 
         public string Name => "OIDC-Auth";
 
-        public bool IsEnabled => true;
+        public bool IsEnabled => _config.isEnabled;
 
-        public Task<ProviderAuthenticationResult> Authenticate(string username, string password)
+        public async Task<ProviderAuthenticationResult> Authenticate(string username, string password)
         {
+            if(IsEnabled) {
+                var options = new OidcClientOptions
+                {
+                    Authority = _config.OIDCServer,
+                    ClientId = _config.OIDCClient,
+                    RedirectUri = "*",
+                    Scope = "openid profile api",
+                };
+
+                var client = new OidcClient(options);
+                var result = await client.LoginAsync(new LoginRequest());
+                _logger.LogWarning(result.Error);
+            }
+
             throw new NotImplementedException();
         }
 
@@ -46,7 +60,7 @@ namespace Jellyfin.Plugin.OIDCAuth
 
         public bool HasPassword(User user)
         {
-            throw new NotImplementedException();
+            return true;
         }
     }
 }
